@@ -1,5 +1,6 @@
 from .aila_casedocs_retrieval import AILACasedocs
 from .aila_statutes_retrieval import AILAStatutes
+from .aila_statutes_codeswitching_retrieval import AILAStatutesCodeSwitching
 from .alpha_nli_retrieval import AlphaNLI
 from .arc_challenge_retrieval import ARCChallenge
 from .argu_ana_retrieval import ArguAna
@@ -82,6 +83,7 @@ from .gl_dv2_i2i_retrieval import GLDv2I2IRetrieval
 from .gl_dv2_i2t_retrieval import GLDv2I2TRetrieval
 from .gov_report_retrieval import GovReportRetrieval
 from .hagrid_retrieval import HagridRetrieval
+from .hagrid_codeswitching_retrieval import HagridRetrievalCodeSwitching
 from .hateful_memes_i2t_retrieval import HatefulMemesI2TRetrieval
 from .hateful_memes_t2i_retrieval import HatefulMemesT2IRetrieval
 from .hc3_finance_retrieval import HC3FinanceRetrieval
@@ -171,6 +173,7 @@ from .sci_fact_retrieval import SciFact
 from .sci_mmir_i2t_retrieval import SciMMIRI2TRetrieval
 from .sci_mmir_t2i_retrieval import SciMMIRT2IRetrieval
 from .scidocs_retrieval import SCIDOCS
+from .scidocs_codeswitching_retrieval import SCIDOCSCodeSwitchingRetrieval
 from .siqa_retrieval import SIQA
 from .sketchy_i2i_retrieval import SketchyI2IRetrieval
 from .sop_i2i_retrieval import SOPI2IRetrieval
@@ -186,6 +189,7 @@ from .temp_reason_l3_pure_retrieval import TempReasonL3Pure
 from .topi_ocqa_retrieval import TopiOCQARetrieval, TopiOCQARetrievalHardNegatives
 from .touche2020_retrieval import Touche2020, Touche2020v3Retrieval
 from .treccovid_retrieval import TRECCOVID
+from .treccovid_codeswitching_retrieval import TRECCOVIDCodeSwitching
 from .trecdl_retrieval import TRECDL2019, TRECDL2020
 from .tu_berlin_t2i_retrieval import TUBerlinT2IRetrieval
 from .vidore_bench_retrieval import (
@@ -216,12 +220,15 @@ __all__ = [
     "NQ",
     "PIQA",
     "SCIDOCS",
+    "SCIDOCSCodeSwitchingRetrieval",
     "SIQA",
     "TRECCOVID",
+    "TRECCOVIDCodeSwitching",
     "TRECDL2019",
     "TRECDL2020",
     "AILACasedocs",
     "AILAStatutes",
+    "AILAStatutesCodeSwitching",
     "ARCChallenge",
     "AlphaNLI",
     "ArguAna",
@@ -303,6 +310,7 @@ __all__ = [
     "GovReportRetrieval",
     "HC3FinanceRetrieval",
     "HagridRetrieval",
+    "HagridRetrievalCodeSwitching",
     "HatefulMemesI2TRetrieval",
     "HatefulMemesT2IRetrieval",
     "HellaSwag",
