@@ -4,8 +4,10 @@ from .pub_chem_smilespc import PubChemSMILESPC
 from .pub_chem_synonym_pc import PubChemSynonymPC
 from .pub_chem_wiki_paragraphs_pc import PubChemWikiParagraphsPC
 from .sprint_duplicate_questions_pc import SprintDuplicateQuestionsPC
+from .sprint_duplicate_questions_codeswitching_pc import SprintDuplicateQuestionsPCCodeSwitching
 from .twitter_sem_eval2015_pc import TwitterSemEval2015PC
 from .twitter_url_corpus_pc import TwitterURLCorpus
+from .twitter_url_corpus_codeswitching_pc import TwitterURLCorpusCodeSwitching
 
 __all__ = [
     "LegalBenchPC",
@@ -14,6 +16,8 @@ __all__ = [
     "PubChemSynonymPC",
     "PubChemWikiParagraphsPC",
     "SprintDuplicateQuestionsPC",
+    "SprintDuplicateQuestionsPCCodeSwitching",
     "TwitterSemEval2015PC",
     "TwitterURLCorpus",
+    "TwitterURLCorpusCodeSwitching",
 ]

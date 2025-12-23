@@ -29,6 +29,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+*.zip
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -164,3 +165,6 @@ powermetrics_log.txt
 
 
 results/
+results_fixed_dataset/
+visualization/
+leaderboard_missing_run.sh

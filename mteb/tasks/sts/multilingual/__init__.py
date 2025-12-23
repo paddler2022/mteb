@@ -6,6 +6,7 @@ from .sts17_multilingual_visual_sts import STS17MultilingualVisualSTS
 from .sts22_crosslingual_sts import STS22CrosslingualSTS, STS22CrosslingualSTSv2
 from .sts_benchmark_multilingual_sts import STSBenchmarkMultilingualSTS
 from .sts_benchmark_multilingual_visual_sts import STSBenchmarkMultilingualVisualSTS
+from .sts22_codeswitching_sts import STS22CodeSwitching
 
 __all__ = [
     "HUMESTS22",
@@ -14,6 +15,7 @@ __all__ = [
     "STS17MultilingualVisualSTS",
     "STS22CrosslingualSTS",
     "STS22CrosslingualSTSv2",
+    "STS22CodeSwitching",
     "STSBenchmarkMultilingualSTS",
     "STSBenchmarkMultilingualVisualSTS",
     "SemRel24STS",

@@ -1,6 +1,7 @@
 from .afri_senti_classification import AfriSentiClassification
 from .afri_senti_lang_classification import AfriSentiLangClassification
 from .amazon_counterfactual_classification import AmazonCounterfactualClassification
+from .amazon_counterfactual_codeswitching_classification import AmazonCounterfactualClassificationCodeSwitching
 from .amazon_reviews_classification import AmazonReviewsClassification
 from .catalonia_tweet_classification import CataloniaTweetClassification
 from .cyrillic_turkic_lang_classification import CyrillicTurkicLangClassification
@@ -14,6 +15,7 @@ from .indic_sentiment_classification import IndicSentimentClassification
 from .language_classification import LanguageClassification
 from .masakha_news_classification import MasakhaNEWSClassification
 from .massive_intent_classification import MassiveIntentClassification
+from .massive_intent_codeswitching_classification import MassiveIntentClassificationCodeSwitching
 from .massive_scenario_classification import MassiveScenarioClassification
 from .mtop_domain_classification import MTOPDomainClassification
 from .mtop_intent_classification import MTOPIntentClassification
@@ -43,6 +45,7 @@ __all__ = [
     "AfriSentiClassification",
     "AfriSentiLangClassification",
     "AmazonCounterfactualClassification",
+    "AmazonCounterfactualClassificationCodeSwitching",
     "AmazonReviewsClassification",
     "CataloniaTweetClassification",
     "CyrillicTurkicLangClassification",
@@ -56,6 +59,7 @@ __all__ = [
     "MTOPIntentClassification",
     "MasakhaNEWSClassification",
     "MassiveIntentClassification",
+    "MassiveIntentClassificationCodeSwitching",
     "MassiveScenarioClassification",
     "MultiHateClassification",
     "MultilingualSentimentClassification",

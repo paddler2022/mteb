@@ -131,6 +131,27 @@ model_prompts = {
     PromptType.document.value: "passage: ",
 }
 
+# E5 instruction prompts for specific tasks (instruction mode)
+# Source: https://github.com/microsoft/unilm/blob/master/e5/utils.py
+# Format: "Instruct: {instruction}\nQuery: " for queries, "" for documents (no prefix)
+# To enable: replace model_prompts with e5_instruct_prompts in e5_eng_large_v2 loader_kwargs
+#
+e5_instruct_prompts = {
+    # Default prompts (fallback for other tasks)
+    **model_prompts,
+    # Instruction Retrieval tasks (FollowIR)
+    # Note: use "document" not "passage" to match PromptType.document.value
+    "Touche2020Retrieval.v3-query": "Instruct: Given a question, retrieve detailed and persuasive arguments that answer the question\nQuery: ",
+    "Touche2020Retrieval.v3-document": "",
+    "TRECCOVID-query": "Instruct: Given a query on COVID-19, retrieve documents that answer the query\nQuery: ",
+    "TRECCOVID-document": "",
+    "Touche2020v3RetrievalCodeSwitching-query": "Instruct: Given a question, retrieve detailed and persuasive arguments that answer the question\nQuery: ",
+    "Touche2020v3RetrievalCodeSwitching-document": "",
+    "TRECCOVIDCodeSwitching-query": "Instruct: Given a query on COVID-19, retrieve documents that answer the query\nQuery: ",
+    "TRECCOVIDCodeSwitching-document": "",
+    # HumanEvalRetrieval - no official prompt provided
+}
+
 E5_TRAINING_DATA = {
     # from 4.2 in https://arxiv.org/pdf/2212.03533
     # also pre-training data from a variety of sources (stackexchange, semantic scholar, reddit, CC, ...)
@@ -322,7 +343,7 @@ e5_eng_base_v2 = ModelMeta(
 e5_eng_large_v2 = ModelMeta(
     loader=sentence_transformers_loader,
     loader_kwargs=dict(
-        model_prompts=model_prompts,
+        model_prompts=model_prompts,#e5_instruct_prompts,
     ),
     name="intfloat/e5-large-v2",
     languages=["eng-Latn"],

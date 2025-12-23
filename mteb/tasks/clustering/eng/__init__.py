@@ -4,6 +4,10 @@ from .arxiv_hierarchical_clustering import (
     ArXivHierarchicalClusteringP2P,
     ArXivHierarchicalClusteringS2S,
 )
+from .arxiv_hierarchical_clustering_codeswitching import (
+    ArXivHierarchicalClusteringP2PCodeSwitching,
+    ArXivHierarchicalClusteringS2SCodeSwitching,
+)
 from .big_patent_clustering import BigPatentClustering, BigPatentClusteringFast
 from .biorxiv_clustering_p2p import BiorxivClusteringP2P, BiorxivClusteringP2PFast
 from .biorxiv_clustering_s2s import BiorxivClusteringS2S, BiorxivClusteringS2SFast
@@ -40,7 +44,9 @@ from .wikipedia_chemistry_topics_clustering import WikipediaChemistryTopicsClust
 
 __all__ = [
     "ArXivHierarchicalClusteringP2P",
+    "ArXivHierarchicalClusteringP2PCodeSwitching",
     "ArXivHierarchicalClusteringS2S",
+    "ArXivHierarchicalClusteringS2SCodeSwitching",
     "ArxivClusteringP2P",
     "ArxivClusteringP2PFast",
     "ArxivClusteringS2S",

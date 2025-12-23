@@ -4,6 +4,7 @@ from .aila_statutes_codeswitching_retrieval import AILAStatutesCodeSwitching
 from .alpha_nli_retrieval import AlphaNLI
 from .arc_challenge_retrieval import ARCChallenge
 from .argu_ana_retrieval import ArguAna
+from .argu_ana_codeswitching_retrieval import ArguAnaCodeSwitching
 from .bar_exam_qa_retrieval import BarExamQARetrieval
 from .bill_sum_ca_retrieval import BillSumCARetrieval
 from .bill_sum_us_retrieval import BillSumUSRetrieval
@@ -26,9 +27,11 @@ from .climate_fever_retrieval import (
     ClimateFEVERHardNegativesV2,
     ClimateFEVERRetrievalv2,
 )
+from .climate_fever_hardnegatives_codeswitching_retrieval import ClimateFEVERHardNegativesCodeSwitching
 from .cqa_dupstack_android_retrieval import CQADupstackAndroidRetrieval
 from .cqa_dupstack_english_retrieval import CQADupstackEnglishRetrieval
 from .cqa_dupstack_gaming_retrieval import CQADupstackGamingRetrieval
+from .cqa_dupstack_gaming_codeswitching_retrieval import CQADupstackGamingRetrievalCodeSwitching
 from .cqa_dupstack_gis_retrieval import CQADupstackGisRetrieval
 from .cqa_dupstack_mathematica_retrieval import CQADupstackMathematicaRetrieval
 from .cqa_dupstack_physics_retrieval import CQADupstackPhysicsRetrieval
@@ -74,6 +77,7 @@ from .fashion_iq_it2i_retrieval import FashionIQIT2IRetrieval
 from .feedback_qa_retrieval import FeedbackQARetrieval
 from .fever_retrieval import FEVER, FEVERHardNegatives, FEVERHardNegativesV2
 from .fi_qa2018_retrieval import FiQA2018
+from .fi_qa2018_codeswitching_retrieval import FiQA2018CodeSwitching
 from .fin_qa_retrieval import FinQARetrieval
 from .finance_bench_retrieval import FinanceBenchRetrieval
 from .flickr30k_i2t_retrieval import Flickr30kI2TRetrieval
@@ -93,6 +97,7 @@ from .hotpot_qa_retrieval import (
     HotpotQAHardNegatives,
     HotpotQAHardNegativesV2,
 )
+from .hotpot_qa_hardnegatives_codeswitching_retrieval import HotpotQAHardNegativesCodeSwitching
 from .image_co_de_t2i_retrieval import ImageCoDeT2IRetrieval
 from .info_seek_it2it_retrieval import InfoSeekIT2ITRetrieval
 from .info_seek_it2t_retrieval import InfoSeekIT2TRetrieval
@@ -188,6 +193,7 @@ from .temp_reason_l3_fact_retrieval import TempReasonL3Fact
 from .temp_reason_l3_pure_retrieval import TempReasonL3Pure
 from .topi_ocqa_retrieval import TopiOCQARetrieval, TopiOCQARetrievalHardNegatives
 from .touche2020_retrieval import Touche2020, Touche2020v3Retrieval
+from .touche2020_codeswitching_retrieval import Touche2020CodeSwitching, Touche2020v3RetrievalCodeSwitching
 from .treccovid_retrieval import TRECCOVID
 from .treccovid_codeswitching_retrieval import TRECCOVIDCodeSwitching
 from .trecdl_retrieval import TRECDL2019, TRECDL2020
@@ -232,6 +238,7 @@ __all__ = [
     "ARCChallenge",
     "AlphaNLI",
     "ArguAna",
+    "ArguAnaCodeSwitching",
     "BIRCOArguAnaReranking",
     "BIRCOClinicalTrialReranking",
     "BIRCODorisMaeReranking",
@@ -249,6 +256,7 @@ __all__ = [
     "CQADupstackAndroidRetrieval",
     "CQADupstackEnglishRetrieval",
     "CQADupstackGamingRetrieval",
+    "CQADupstackGamingRetrievalCodeSwitching",
     "CQADupstackGisRetrieval",
     "CQADupstackMathematicaRetrieval",
     "CQADupstackPhysicsRetrieval",
@@ -264,6 +272,7 @@ __all__ = [
     "ClimateFEVER",
     "ClimateFEVERHardNegatives",
     "ClimateFEVERHardNegativesV2",
+    "ClimateFEVERHardNegativesCodeSwitching",
     "ClimateFEVERRetrievalv2",
     "DAPFAMAllTitlAbsClmToFullTextRetrieval",
     "DAPFAMAllTitlAbsClmToTitlAbsClmRetrieval",
@@ -301,6 +310,7 @@ __all__ = [
     "FashionIQIT2IRetrieval",
     "FeedbackQARetrieval",
     "FiQA2018",
+    "FiQA2018CodeSwitching",
     "FinQARetrieval",
     "FinanceBenchRetrieval",
     "Flickr30kI2TRetrieval",
@@ -316,6 +326,7 @@ __all__ = [
     "HellaSwag",
     "HotpotQA",
     "HotpotQAHardNegatives",
+    "HotpotQAHardNegativesCodeSwitching",
     "HotpotQAHardNegativesV2",
     "ImageCoDeT2IRetrieval",
     "InfoSeekIT2ITRetrieval",
@@ -404,6 +415,8 @@ __all__ = [
     "TopiOCQARetrievalHardNegatives",
     "Touche2020",
     "Touche2020v3Retrieval",
+    "Touche2020CodeSwitching",
+    "Touche2020v3RetrievalCodeSwitching",
     "VQA2IT2TRetrieval",
     "VidoreArxivQARetrieval",
     "VidoreDocVQARetrieval",

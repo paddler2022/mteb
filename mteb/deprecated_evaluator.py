@@ -260,6 +260,7 @@ class MTEB:
     def run(
         self,
         model: MTEBModels | CrossEncoder | SentenceTransformer,
+        model_name:str,
         verbosity: int = 1,
         output_folder: str | None = "results",
         eval_splits: list[str] | None = None,
@@ -312,7 +313,7 @@ class MTEB:
             datasets.logging.set_verbosity(logging.DEBUG)
 
         meta = self.create_model_meta(model)
-        output_path = self._create_output_folder(meta, output_folder)
+        output_path = self._create_output_folder(meta, output_folder, model_name)
 
         if isinstance(model, SentenceTransformer):
             model = SentenceTransformerEncoderWrapper(model)
@@ -572,7 +573,7 @@ class MTEB:
         return meta
 
     def _create_output_folder(
-        self, model_meta: ModelMeta, output_folder: str | None
+        self, model_meta: ModelMeta, output_folder: str | None, model_name,
     ) -> Path | None:
         """Create output folder for the results.
 
@@ -586,10 +587,7 @@ class MTEB:
         if output_folder is None:
             return None
 
-        model_revision: str = model_meta.revision  # type: ignore
-        model_path_name = model_meta.model_name_as_path()
-
-        output_path = Path(output_folder) / model_path_name / model_revision
+        output_path = Path(output_folder) / model_name
         output_path.mkdir(parents=True, exist_ok=True)
         return output_path
 

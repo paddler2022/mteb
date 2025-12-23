@@ -3,6 +3,7 @@ from .humesickr import HUMESICKR
 from .humests12 import HUMESTS12
 from .humests_benchmark import HUMESTSBenchmark
 from .sickr_sts import SickrSTS
+from .sickr_codeswitching_sts import SickrCodeSwitchingSTS
 from .sts12_sts import STS12STS
 from .sts12_visual_sts import STS12VisualSTS
 from .sts13_sts import STS13STS
@@ -32,4 +33,5 @@ __all__ = [
     "STS16VisualSTS",
     "STSBenchmarkSTS",
     "SickrSTS",
+    "SickrCodeSwitchingSTS",
 ]
