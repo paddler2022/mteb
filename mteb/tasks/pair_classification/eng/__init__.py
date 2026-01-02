@@ -6,6 +6,7 @@ from .pub_chem_wiki_paragraphs_pc import PubChemWikiParagraphsPC
 from .sprint_duplicate_questions_pc import SprintDuplicateQuestionsPC
 from .sprint_duplicate_questions_codeswitching_pc import SprintDuplicateQuestionsPCCodeSwitching
 from .twitter_sem_eval2015_pc import TwitterSemEval2015PC
+from .twitter_sem_eval2015_codeswitching_pc import TwitterSemEval2015CodeSwitching
 from .twitter_url_corpus_pc import TwitterURLCorpus
 from .twitter_url_corpus_codeswitching_pc import TwitterURLCorpusCodeSwitching
 
@@ -18,6 +19,7 @@ __all__ = [
     "SprintDuplicateQuestionsPC",
     "SprintDuplicateQuestionsPCCodeSwitching",
     "TwitterSemEval2015PC",
+    "TwitterSemEval2015CodeSwitching",
     "TwitterURLCorpus",
     "TwitterURLCorpusCodeSwitching",
 ]

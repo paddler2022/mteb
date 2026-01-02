@@ -21,10 +21,17 @@ def load_jsonl(filepath):
     return data
 
 
+def split_labels(record: dict) -> dict:
+    """将层级标签分割成列表，例如 'quant-ph.cs' -> ['quant-ph', 'cs']"""
+    record["labels"] = record["labels"].split(".")
+    return record
+
+
 class ArXivHierarchicalClusteringP2PCodeSwitching(AbsTaskClustering):
     """
     ArXivHierarchicalClusteringP2P Code-Switching 变体任务
     - 完全从本地 jsonl 文件加载（sentences 和 labels）
+    - 每行一个样本：{"sentences": "text...", "labels": "quant-ph"}
     """
 
     metadata = TaskMetadata(
@@ -64,6 +71,7 @@ class ArXivHierarchicalClusteringP2PCodeSwitching(AbsTaskClustering):
     def load_data(self, **kwargs):
         """
         加载数据：完全从本地 jsonl 文件加载 sentences 和 labels
+        每行一个样本格式：{"sentences": "text...", "labels": "quant-ph"}
         """
         if self.data_loaded:
             return
@@ -82,12 +90,15 @@ class ArXivHierarchicalClusteringP2PCodeSwitching(AbsTaskClustering):
         print(f"Loading data from local file: {self.test_file}")
         local_data = load_jsonl(self.test_file)
 
-        # ========== 3. 构建数据集 ==========
+        # ========== 3. 构建数据集（每行一个样本）==========
         sentences = []
         labels = []
-        for item in local_data:
-            sentences.append(item['sentences'])
-            labels.append(item['labels'])
+        for idx, item in enumerate(local_data):
+            try:
+                sentences.append(item['sentences'])
+                labels.append(item['labels'])
+            except KeyError as e:
+                raise KeyError(f"Missing key {e} in item {idx}: {item}")
 
         self.dataset = DatasetDict({
             "test": Dataset.from_dict({
@@ -95,6 +106,9 @@ class ArXivHierarchicalClusteringP2PCodeSwitching(AbsTaskClustering):
                 "labels": labels,
             })
         })
+
+        # 分割层级标签
+        self.dataset = self.dataset.map(split_labels)
 
         # 采样
         if len(self.dataset["test"]) > N_SAMPLES:
@@ -110,6 +124,7 @@ class ArXivHierarchicalClusteringS2SCodeSwitching(AbsTaskClustering):
     """
     ArXivHierarchicalClusteringS2S Code-Switching 变体任务
     - 完全从本地 jsonl 文件加载（sentences 和 labels）
+    - 每行一个样本：{"sentences": "text...", "labels": "quant-ph"}
     """
 
     metadata = TaskMetadata(
@@ -149,6 +164,7 @@ class ArXivHierarchicalClusteringS2SCodeSwitching(AbsTaskClustering):
     def load_data(self, **kwargs):
         """
         加载数据：完全从本地 jsonl 文件加载 sentences 和 labels
+        每行一个样本格式：{"sentences": "text...", "labels": "quant-ph"}
         """
         if self.data_loaded:
             return
@@ -167,12 +183,15 @@ class ArXivHierarchicalClusteringS2SCodeSwitching(AbsTaskClustering):
         print(f"Loading data from local file: {self.test_file}")
         local_data = load_jsonl(self.test_file)
 
-        # ========== 3. 构建数据集 ==========
+        # ========== 3. 构建数据集（每行一个样本）==========
         sentences = []
         labels = []
-        for item in local_data:
-            sentences.append(item['sentences'])
-            labels.append(item['labels'])
+        for idx, item in enumerate(local_data):
+            try:
+                sentences.append(item['sentences'])
+                labels.append(item['labels'])
+            except KeyError as e:
+                raise KeyError(f"Missing key {e} in item {idx}: {item}")
 
         self.dataset = DatasetDict({
             "test": Dataset.from_dict({
@@ -180,6 +199,9 @@ class ArXivHierarchicalClusteringS2SCodeSwitching(AbsTaskClustering):
                 "labels": labels,
             })
         })
+
+        # 分割层级标签
+        self.dataset = self.dataset.map(split_labels)
 
         # 采样
         if len(self.dataset["test"]) > N_SAMPLES:

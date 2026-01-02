@@ -99,10 +99,13 @@ class AskUbuntuDupQuestionsCodeSwitching(AbsTaskRetrieval):
         self.corpus = {"test": {}}
         self.relevant_docs = {"test": {}}
 
-        for item in tqdm(query_lines, desc="Loading queries"):
-            qid = str(item.get('id') or item.get('_id'))
-            text = item.get('text', '')
-            self.queries["test"][qid] = text
+        for idx, item in enumerate(tqdm(query_lines, desc="Loading queries")):
+            try:
+                qid = str(item.get('_id') or item['id'])
+                text = item['text']
+                self.queries["test"][qid] = text
+            except KeyError as e:
+                raise KeyError(f"Missing key {e} in query item {idx}: {item}")
 
         for item in tqdm(corpus_lines, desc="Loading corpus"):
             doc_id = str(item.get('_id') or item.get('id'))
@@ -114,7 +117,7 @@ class AskUbuntuDupQuestionsCodeSwitching(AbsTaskRetrieval):
         for item in tqdm(qrels_lines, desc="Loading qrels"):
             qid = str(item.get('query-id'))
             doc_id = str(item.get('corpus-id'))
-            score = item.get('score', 1)
+            score = int(item.get('score'))
 
             if qid in self.queries["test"]:
                 if qid not in self.relevant_docs["test"]:

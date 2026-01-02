@@ -19,19 +19,20 @@ def load_jsonl(filepath):
     return data
 
 
-class ClimateFEVERHardNegativesCodeSwitching(AbsTaskRetrieval):
+class ClimateFEVERHardNegativesV2CodeSwitching(AbsTaskRetrieval):
     """
-    ClimateFEVER HardNegatives Code-Switching 变体任务
+    ClimateFEVER HardNegatives V2 Code-Switching 变体任务
     - queries: 从本地 jsonl 文件加载（code-switching queries）
     - corpus 和 qrels: 从官方 HuggingFace 库加载
     """
 
     metadata = TaskMetadata(
-        name="ClimateFEVERHardNegativesCodeSwitching",
+        name="ClimateFEVERHardNegatives.v2CodeSwitching",
         description=(
-            "ClimateFEVER HardNegatives Code-Switching variant. "
+            "ClimateFEVER HardNegatives V2 Code-Switching variant. "
             "CLIMATE-FEVER is a dataset adopting the FEVER methodology that consists of 1,535 real-world claims regarding climate-change. "
             "The hard negative version has been created by pooling the 250 top documents per query from BM25, e5-multilingual-large and e5-mistral-instruct. "
+            "V2 uses a more appropriate prompt rather than the default prompt for retrieval. "
             "Corpus and qrels are loaded from the official dataset."
         ),
         reference="https://www.sustainablefinance.uzh.ch/en/research/climate-fever.html",
@@ -52,6 +53,7 @@ class ClimateFEVERHardNegativesCodeSwitching(AbsTaskRetrieval):
         annotations_creators="human-annotated",
         dialect=[],
         sample_creation="found",
+        adapted_from=["ClimateFEVER"],
         bibtex_citation=r"""
 @misc{diggelmann2021climatefever,
   archiveprefix = {arXiv},
@@ -68,15 +70,25 @@ class ClimateFEVERHardNegativesCodeSwitching(AbsTaskRetrieval):
     )
 
     def __init__(self, query_file: str = None, **kwargs):
+        """
+        初始化任务
 
+        Args:
+            query_file: 本地 queries jsonl 文件路径。如果为 None，则从环境变量 CLIMATEFEVER_QUERY_FILE 获取
+        """
         super().__init__(**kwargs)
         self.query_file = query_file or os.getenv("CLIMATEFEVER_QUERY_FILE")
 
     def load_data(self, **kwargs):
-
+        """
+        加载数据：
+        - queries: 从本地 jsonl 文件
+        - corpus 和 qrels: 从官方 HuggingFace 数据集
+        """
         if self.data_loaded:
             return
 
+        # ========== 1. 验证 query 文件路径 ==========
         if not self.query_file:
             raise ValueError(
                 "Query file path not provided. "
@@ -86,9 +98,11 @@ class ClimateFEVERHardNegativesCodeSwitching(AbsTaskRetrieval):
         if not os.path.exists(self.query_file):
             raise FileNotFoundError(f"Query file not found: {self.query_file}")
 
+        # ========== 2. 从本地加载 queries ==========
         print(f"Loading queries from local file: {self.query_file}")
         query_lines = load_jsonl(self.query_file)
 
+        # ========== 3. 从官方库加载 corpus 和 qrels ==========
         dataset_path = self.metadata.dataset["path"]
         revision = self.metadata.dataset["revision"]
 
@@ -100,15 +114,21 @@ class ClimateFEVERHardNegativesCodeSwitching(AbsTaskRetrieval):
         qrels_dataset = load_dataset(dataset_path, "default", revision=revision)
         qrels_lines = list(qrels_dataset['test'])
 
+        # ========== 4. 初始化数据结构 ==========
         self.queries = {"test": {}}
         self.corpus = {"test": {}}
         self.relevant_docs = {"test": {}}
 
-        for item in tqdm(query_lines, desc="Loading queries"):
-            qid = str(item.get('id') or item.get('_id'))
-            text = item.get('text', '')
-            self.queries["test"][qid] = text
+        # ========== 5. 填充 queries（从本地文件）==========
+        for idx, item in enumerate(tqdm(query_lines, desc="Loading queries")):
+            try:
+                qid = str(item.get('_id') or item['id'])
+                text = item['text']
+                self.queries["test"][qid] = text
+            except KeyError as e:
+                raise KeyError(f"Missing key {e} in query item {idx}: {item}")
 
+        # ========== 6. 填充 corpus（从官方库）==========
         for item in tqdm(corpus_lines, desc="Loading corpus"):
             doc_id = str(item.get('_id') or item.get('id'))
             self.corpus["test"][doc_id] = {
@@ -116,16 +136,18 @@ class ClimateFEVERHardNegativesCodeSwitching(AbsTaskRetrieval):
                 "text": item.get('text', '')
             }
 
+        # ========== 7. 填充 relevant_docs（从官方库）==========
         for item in tqdm(qrels_lines, desc="Loading qrels"):
             qid = str(item.get('query-id'))
             doc_id = str(item.get('corpus-id'))
-            score = int(item.get('score', 1))
+            score = int(item.get('score'))
 
             if qid in self.queries["test"]:
                 if qid not in self.relevant_docs["test"]:
                     self.relevant_docs["test"][qid] = {}
                 self.relevant_docs["test"][qid][doc_id] = score
 
+        # ========== 8. 统计信息 ==========
         print(f"Loaded {len(self.queries['test'])} queries")
         print(f"Loaded {len(self.corpus['test'])} documents")
         print(f"Loaded {len(self.relevant_docs['test'])} query-document relevance pairs")

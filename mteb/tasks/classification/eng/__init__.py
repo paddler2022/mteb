@@ -186,6 +186,9 @@ from .tweet_sentiment_extraction_classification import (
     TweetSentimentExtractionClassification,
     TweetSentimentExtractionClassificationV2,
 )
+from .tweet_sentiment_extraction_codeswitching_classification import (
+    TweetSentimentExtractionClassificationCodeSwitching,
+)
 from .tweet_topic_single_classification import (
     TweetTopicSingleClassification,
     TweetTopicSingleClassificationV2,
@@ -422,6 +425,7 @@ __all__ = [
     "ToxicConversationsClassificationV2",
     "TweetSentimentExtractionClassification",
     "TweetSentimentExtractionClassificationV2",
+    "TweetSentimentExtractionClassificationCodeSwitching",
     "TweetTopicSingleClassification",
     "TweetTopicSingleClassificationV2",
     "UCCVCommonLawLegalBenchClassification",

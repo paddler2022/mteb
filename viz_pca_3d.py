@@ -334,6 +334,8 @@ def encode_queries(model, model_type, queries, task_name, batch_size=32):
 
 # ========== 3D 可视化函数 ==========
 
+
+
 def visualize_pca_3d(emb_original, emb_cs, task_name, output_dir, model_name,
                      elev=30, azim=45, interactive=False):
     """PCA 3D 可视化"""
@@ -351,19 +353,48 @@ def visualize_pca_3d(emb_original, emb_cs, task_name, output_dir, model_name,
     for label in ['Original', 'CodeSwitching']:
         mask = labels == label
         ax.scatter(reduced[mask, 0], reduced[mask, 1], reduced[mask, 2],
-                   label=f'{label} (n={mask.sum()})', alpha=0.6, c=colors[label], s=50)
+                   label=f'{label}', alpha=0.6, c=colors[label], s=50)
 
-    ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.1%})')
-    ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.1%})')
-    ax.set_zlabel(f'PC3 ({pca.explained_variance_ratio_[2]:.1%})')
-    ax.legend()
-    ax.set_title(f'{task_name}: Original vs CodeSwitching (3D)\nModel: {model_name}')
+    # ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.1%})')
+    # ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.1%})')
+    # ax.set_zlabel(f'PC3 ({pca.explained_variance_ratio_[2]:.1%})')
+    # ax.legend(fontsize=15, loc='upper right')
+    ax.set_title(f'{task_name}\nModel:{model_name}', fontsize=32)
+    # ax.tick_params(axis='both', which='major', labelsize=32)
 
+
+
+    #########################################################
     # 设置视角
+    TICK_SIZE = 32
+
+    ax.tick_params(axis='x', labelsize=TICK_SIZE)
+    ax.tick_params(axis='y', labelsize=TICK_SIZE)
+    ax.tick_params(axis='z', labelsize=TICK_SIZE, pad=12)
+
+    ax.set_xlabel('')
+    ax.set_ylabel('')
+    ax.set_zlabel('')
+
+    ax.grid(True, linestyle='--', linewidth=0.5, alpha=0.12)
+
+    ax.xaxis.pane.fill = False
+    ax.yaxis.pane.fill = False
+    ax.zaxis.pane.fill = False
+
+    ax.xaxis.pane.set_edgecolor('w')
+    ax.yaxis.pane.set_edgecolor('w')
+    ax.zaxis.pane.set_edgecolor('w')
+
+    ax.legend(fontsize=28, frameon=False, loc='upper right', bbox_to_anchor=(1.07, 1.03), handletextpad=0.1)
+
     ax.view_init(elev=elev, azim=azim)
 
     output_path = os.path.join(output_dir, f'pca_3d_{task_name}.png')
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
+    print(f"Saved: {output_path}")
+    output_path = os.path.join(output_dir, f'pca_3d_{task_name}.pdf')
+    plt.savefig(output_path, format='pdf', bbox_inches='tight')
     print(f"Saved: {output_path}")
 
     # 保存多个视角
@@ -372,6 +403,9 @@ def visualize_pca_3d(emb_original, emb_cs, task_name, output_dir, model_name,
         ax.view_init(elev=elev, azim=azim)
         angle_path = os.path.join(output_dir, f'pca_3d_{task_name}_elev{elev}_azim{azim}.png')
         plt.savefig(angle_path, dpi=150, bbox_inches='tight')
+        print(f"Saved: {angle_path}")
+        angle_path = os.path.join(output_dir, f'pca_3d_{task_name}_elev{elev}_azim{azim}.pdf')
+        plt.savefig(angle_path, format='pdf', bbox_inches='tight')
         print(f"Saved: {angle_path}")
 
     if interactive:

@@ -27,7 +27,7 @@ from .climate_fever_retrieval import (
     ClimateFEVERHardNegativesV2,
     ClimateFEVERRetrievalv2,
 )
-from .climate_fever_hardnegatives_codeswitching_retrieval import ClimateFEVERHardNegativesCodeSwitching
+from .climate_fever_hardnegatives_codeswitching_retrieval import ClimateFEVERHardNegativesV2CodeSwitching
 from .cqa_dupstack_android_retrieval import CQADupstackAndroidRetrieval
 from .cqa_dupstack_english_retrieval import CQADupstackEnglishRetrieval
 from .cqa_dupstack_gaming_retrieval import CQADupstackGamingRetrieval
@@ -272,7 +272,7 @@ __all__ = [
     "ClimateFEVER",
     "ClimateFEVERHardNegatives",
     "ClimateFEVERHardNegativesV2",
-    "ClimateFEVERHardNegativesCodeSwitching",
+    "ClimateFEVERHardNegativesV2CodeSwitching",
     "ClimateFEVERRetrievalv2",
     "DAPFAMAllTitlAbsClmToFullTextRetrieval",
     "DAPFAMAllTitlAbsClmToTitlAbsClmRetrieval",
