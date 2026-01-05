@@ -171,7 +171,7 @@ Model_Align_Embedding/diag.py
 Model_Align_Embedding/test.py
 results/
 results_fixed_dataset/
-visualization/
+visualization*/
 viz/
 CodeSwitching_Dataset_fixed/
 leaderboard_missing_run.sh

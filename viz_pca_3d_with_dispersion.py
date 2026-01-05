@@ -4,10 +4,12 @@ Query Embedding 3D Visualization Script
 PCA 降维到 3D 并可视化
 
 直接从 HuggingFace datasets 加载 queries，不加载 corpus
+增加 Dispersion 计算和显示功能
 """
 
 import numpy as np
 from sklearn.decomposition import PCA
+from sklearn.metrics.pairwise import cosine_similarity
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import argparse
@@ -23,7 +25,6 @@ from datasets import load_dataset
 from mteb.types import PromptType
 from mteb.models.sentence_transformer_wrapper import SentenceTransformerEncoderWrapper
 from mteb.models.instruct_wrapper import InstructSentenceTransformerModel
-
 
 # ========== E5 Prompt 配置 ==========
 E5_PROMPTS = {
@@ -108,6 +109,112 @@ def load_config(config_path):
     """加载 YAML 配置文件"""
     with open(config_path, 'r', encoding='utf-8') as f:
         return yaml.safe_load(f)
+
+
+# ========== Dispersion 计算函数 ==========
+
+def compute_dispersion(embeddings, method="avg_cosine"):
+    """
+    计算 embedding 的 dispersion（分散度）
+
+    Args:
+        embeddings: numpy array, shape (n_samples, embedding_dim)
+        method: 计算方法
+            - "avg_cosine": 1 - 平均余弦相似度（越大越分散）
+            - "avg_cosine_raw": 平均余弦相似度（越小越分散）
+            - "center_distance": 平均到中心的距离
+            - "isotropy": 基于特征值的各向同性度量
+
+    Returns:
+        tuple: (dispersion_value, auxiliary_info_dict)
+    """
+    n_samples = len(embeddings)
+
+    if method == "avg_cosine" or method == "avg_cosine_raw":
+        # 计算所有向量对的余弦相似度
+        sim_matrix = cosine_similarity(embeddings)
+        # 排除对角线（自身相似度=1）
+        avg_sim = (sim_matrix.sum() - n_samples) / (n_samples * n_samples - n_samples)
+
+        if method == "avg_cosine":
+            # 返回 1 - avg_sim，值越大表示越分散
+            dispersion = 1 - avg_sim
+        else:
+            dispersion = avg_sim
+
+        return dispersion, {"avg_cosine_similarity": avg_sim}
+
+    elif method == "center_distance":
+        # 计算向量到中心的平均欧氏距离
+        center = embeddings.mean(axis=0)
+        distances = np.linalg.norm(embeddings - center, axis=1)
+        avg_dist = distances.mean()
+        std_dist = distances.std()
+
+        return avg_dist, {"avg_distance": avg_dist, "std_distance": std_dist}
+
+    elif method == "isotropy":
+        # 基于 PCA 特征值计算各向同性
+        # 参考: https://arxiv.org/abs/1909.00512
+        centered = embeddings - embeddings.mean(axis=0)
+        cov = np.cov(centered.T)
+        eigenvalues = np.linalg.eigvalsh(cov)
+        eigenvalues = np.sort(eigenvalues)[::-1]  # 降序
+
+        # 计算有效维度 (participation ratio)
+        eigenvalues_normalized = eigenvalues / eigenvalues.sum()
+        participation_ratio = 1.0 / (eigenvalues_normalized ** 2).sum()
+
+        # 归一化到 [0, 1]
+        isotropy = participation_ratio / len(eigenvalues)
+
+        return isotropy, {
+            "participation_ratio": participation_ratio,
+            "top_eigenvalue_ratio": eigenvalues[0] / eigenvalues.sum()
+        }
+
+    else:
+        raise ValueError(f"Unknown method: {method}")
+
+
+def compute_all_dispersion_metrics(embeddings, name=""):
+    """
+    计算所有 dispersion 指标
+
+    Args:
+        embeddings: numpy array
+        name: 数据集名称（用于打印）
+
+    Returns:
+        dict: 包含所有指标的字典
+    """
+    results = {}
+
+    # 1. 平均余弦相似度
+    disp_cosine, info_cosine = compute_dispersion(embeddings, method="avg_cosine")
+    results["dispersion_cosine"] = disp_cosine
+    results["avg_cosine_similarity"] = info_cosine["avg_cosine_similarity"]
+
+    # 2. 中心距离
+    disp_center, info_center = compute_dispersion(embeddings, method="center_distance")
+    results["avg_center_distance"] = disp_center
+    results["std_center_distance"] = info_center["std_distance"]
+
+    # 3. 各向同性
+    disp_isotropy, info_isotropy = compute_dispersion(embeddings, method="isotropy")
+    results["isotropy"] = disp_isotropy
+    results["participation_ratio"] = info_isotropy["participation_ratio"]
+    results["top_eigenvalue_ratio"] = info_isotropy["top_eigenvalue_ratio"]
+
+    if name:
+        print(f"\n  [{name}] Dispersion Metrics:")
+        print(f"    Avg Cosine Similarity: {results['avg_cosine_similarity']:.4f}")
+        print(f"    Dispersion (1-cos):    {results['dispersion_cosine']:.4f}")
+        print(f"    Avg Center Distance:   {results['avg_center_distance']:.4f}")
+        print(f"    Isotropy:              {results['isotropy']:.4f}")
+        print(f"    Top Eigenvalue Ratio:  {results['top_eigenvalue_ratio']:.4f}")
+
+    return results
 
 
 # ========== 模型加载函数 ==========
@@ -334,17 +441,28 @@ def encode_queries(model, model_type, queries, task_name, batch_size=32):
 
 # ========== 3D 可视化函数 ==========
 
-
 def visualize_pca_3d(emb_original, emb_cs, task_name, output_dir, model_name,
                      elev=30, azim=45, interactive=False):
-    """PCA 3D 可视化"""
+    """PCA 3D 可视化（含 dispersion 计算和显示）"""
+
+    # ===== 计算 Dispersion =====
+    print("\n[Dispersion Analysis]")
+    metrics_original = compute_all_dispersion_metrics(emb_original, name="Original")
+    metrics_cs = compute_all_dispersion_metrics(emb_cs, name="CodeSwitching")
+
+    disp_orig = metrics_original["dispersion_cosine"]
+    disp_cs = metrics_cs["dispersion_cosine"]
+    avg_sim_orig = metrics_original["avg_cosine_similarity"]
+    avg_sim_cs = metrics_cs["avg_cosine_similarity"]
+
+    # ===== PCA 降维 =====
     embeddings = np.vstack([emb_original, emb_cs])
     labels = np.array(['Original'] * len(emb_original) + ['CodeSwitching'] * len(emb_cs))
 
     pca = PCA(n_components=3)
     reduced = pca.fit_transform(embeddings)
 
-    fig = plt.figure(figsize=(12, 10))
+    fig = plt.figure(figsize=(14, 11))
     ax = fig.add_subplot(111, projection='3d')
 
     colors = {'Original': 'blue', 'CodeSwitching': 'red'}
@@ -354,18 +472,11 @@ def visualize_pca_3d(emb_original, emb_cs, task_name, output_dir, model_name,
         ax.scatter(reduced[mask, 0], reduced[mask, 1], reduced[mask, 2],
                    label=f'{label}', alpha=0.6, c=colors[label], s=50)
 
-    # ax.set_xlabel(f'PC1 ({pca.explained_variance_ratio_[0]:.1%})')
-    # ax.set_ylabel(f'PC2 ({pca.explained_variance_ratio_[1]:.1%})')
-    # ax.set_zlabel(f'PC3 ({pca.explained_variance_ratio_[2]:.1%})')
-    # ax.legend(fontsize=15, loc='upper right')
-    ax.set_title(f'{task_name}\nModel:{model_name}', fontsize=32)
-    # ax.tick_params(axis='both', which='major', labelsize=32)
+    # ===== 标题（含 dispersion）=====
+    ax.set_title(f'{task_name}\nModel: {model_name}', fontsize=24)
 
-
-
-    #########################################################
-    # 设置视角
-    TICK_SIZE = 32
+    # ===== 设置视角和样式 =====
+    TICK_SIZE = 24
 
     ax.tick_params(axis='x', labelsize=TICK_SIZE)
     ax.tick_params(axis='y', labelsize=TICK_SIZE)
@@ -385,46 +496,97 @@ def visualize_pca_3d(emb_original, emb_cs, task_name, output_dir, model_name,
     ax.yaxis.pane.set_edgecolor('w')
     ax.zaxis.pane.set_edgecolor('w')
 
-    ax.legend(fontsize=28, frameon=False, loc='upper right', bbox_to_anchor=(1.07, 1.03), handletextpad=0.1)
+    # ===== Legend（含 dispersion）=====
+    legend_labels = [
+        f'Original (disp={disp_orig:.3f})',
+        f'CodeSwitching (disp={disp_cs:.3f})'
+    ]
+    handles = [plt.Line2D([0], [0], marker='o', color='w',
+                          markerfacecolor=colors['Original'], markersize=10),
+               plt.Line2D([0], [0], marker='o', color='w',
+                          markerfacecolor=colors['CodeSwitching'], markersize=10)]
+
+    ax.legend(handles, legend_labels, fontsize=18, frameon=False,
+              loc='upper right', bbox_to_anchor=(1.05, 1.0), handletextpad=0.1)
+
+    # ===== 添加文本框显示详细指标 =====
+    textstr = (f'Dispersion Metrics:\n'
+               f'Original:  cos_sim={avg_sim_orig:.3f}, disp={disp_orig:.3f}\n'
+               f'CodeSwitch: cos_sim={avg_sim_cs:.3f}, disp={disp_cs:.3f}')
+
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.8)
+    fig.text(0.02, 0.02, textstr, fontsize=12, verticalalignment='bottom',
+             bbox=props, family='monospace')
 
     ax.view_init(elev=elev, azim=azim)
 
+    # ===== 保存图片 =====
     output_path = os.path.join(output_dir, f'pca_3d_{task_name}.png')
     plt.savefig(output_path, dpi=150, bbox_inches='tight')
-    print(f"Saved: {output_path}")
-    output_path = os.path.join(output_dir, f'pca_3d_{task_name}.pdf')
-    plt.savefig(output_path, format='pdf', bbox_inches='tight')
-    print(f"Saved: {output_path}")
+    print(f"\nSaved: {output_path}")
+
+    output_path_pdf = os.path.join(output_dir, f'pca_3d_{task_name}.pdf')
+    plt.savefig(output_path_pdf, format='pdf', bbox_inches='tight')
+    print(f"Saved: {output_path_pdf}")
 
     # 保存多个视角
     angles = [(30, 45), (30, 135), (30, 225), (30, 315), (60, 45), (0, 0)]
-    for elev, azim in angles:
-        ax.view_init(elev=elev, azim=azim)
-        angle_path = os.path.join(output_dir, f'pca_3d_{task_name}_elev{elev}_azim{azim}.png')
+    for elev_angle, azim_angle in angles:
+        ax.view_init(elev=elev_angle, azim=azim_angle)
+        angle_path = os.path.join(output_dir, f'pca_3d_{task_name}_elev{elev_angle}_azim{azim_angle}.png')
         plt.savefig(angle_path, dpi=150, bbox_inches='tight')
         print(f"Saved: {angle_path}")
-        angle_path = os.path.join(output_dir, f'pca_3d_{task_name}_elev{elev}_azim{azim}.pdf')
-        plt.savefig(angle_path, format='pdf', bbox_inches='tight')
-        print(f"Saved: {angle_path}")
+        angle_path_pdf = os.path.join(output_dir, f'pca_3d_{task_name}_elev{elev_angle}_azim{azim_angle}.pdf')
+        plt.savefig(angle_path_pdf, format='pdf', bbox_inches='tight')
+        print(f"Saved: {angle_path_pdf}")
 
     if interactive:
         plt.show()
     else:
         plt.close()
 
-    # 保存 embeddings 和降维结果 (3D 版本)
+    # ===== 保存 embeddings 和降维结果 =====
     np.save(os.path.join(output_dir, f'{task_name}_3d_original.npy'), emb_original)
     np.save(os.path.join(output_dir, f'{task_name}_3d_codeswitching.npy'), emb_cs)
     np.save(os.path.join(output_dir, f'{task_name}_3d_pca.npy'), reduced)
-    print(f"Saved: {task_name}_3d_original.npy, {task_name}_3d_codeswitching.npy, {task_name}_3d_pca.npy")
+    print(f"\nSaved: {task_name}_3d_original.npy, {task_name}_3d_codeswitching.npy, {task_name}_3d_pca.npy")
 
-    # 打印方差解释比例
+    # ===== 保存 dispersion 结果到 JSON =====
+    dispersion_results = {
+        "task": task_name,
+        "model": model_name,
+        "original": {
+            "n_samples": len(emb_original),
+            "embedding_dim": emb_original.shape[1],
+            **metrics_original
+        },
+        "codeswitching": {
+            "n_samples": len(emb_cs),
+            "embedding_dim": emb_cs.shape[1],
+            **metrics_cs
+        },
+        "pca_variance_explained": {
+            "PC1": float(pca.explained_variance_ratio_[0]),
+            "PC2": float(pca.explained_variance_ratio_[1]),
+            "PC3": float(pca.explained_variance_ratio_[2]),
+            "total_3PCs": float(sum(pca.explained_variance_ratio_[:3]))
+        }
+    }
+
+    disp_path = os.path.join(output_dir, f'{task_name}_dispersion.json')
+    with open(disp_path, 'w', encoding='utf-8') as f:
+        json.dump(dispersion_results, f, indent=2, ensure_ascii=False)
+    print(f"Saved: {disp_path}")
+
+    # ===== 打印 PCA 方差解释比例 =====
     total_var = sum(pca.explained_variance_ratio_[:3])
     print(f"\nPCA Variance Explained:")
     print(f"  PC1: {pca.explained_variance_ratio_[0]:.2%}")
     print(f"  PC2: {pca.explained_variance_ratio_[1]:.2%}")
     print(f"  PC3: {pca.explained_variance_ratio_[2]:.2%}")
     print(f"  Total (3 PCs): {total_var:.2%}")
+
+    return dispersion_results
 
 
 # ========== 主函数 ==========
@@ -497,12 +659,21 @@ def main():
     print("Encoding CodeSwitching queries...")
     emb_cs = encode_queries(model, model_type, queries_cs, task_name + "CodeSwitching", batch_size)
 
-    # 3D 可视化
-    print("\n[4] Creating 3D PCA visualization...")
-    visualize_pca_3d(emb_original, emb_cs, task_name, output_dir, model_name,
-                     elev=args.elev, azim=args.azim, interactive=args.interactive)
+    # 3D 可视化（含 dispersion 计算）
+    print("\n[4] Creating 3D PCA visualization with dispersion analysis...")
+    dispersion_results = visualize_pca_3d(
+        emb_original, emb_cs, task_name, output_dir, model_name,
+        elev=args.elev, azim=args.azim, interactive=args.interactive
+    )
 
+    # 打印最终摘要
     print("\n" + "=" * 60)
+    print("Summary:")
+    print(f"  Original Dispersion:      {dispersion_results['original']['dispersion_cosine']:.4f}")
+    print(f"  CodeSwitching Dispersion: {dispersion_results['codeswitching']['dispersion_cosine']:.4f}")
+    print(
+        f"  Difference (CS - Orig):   {dispersion_results['codeswitching']['dispersion_cosine'] - dispersion_results['original']['dispersion_cosine']:.4f}")
+    print("=" * 60)
     print("Done!")
     print("=" * 60)
 
